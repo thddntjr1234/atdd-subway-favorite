@@ -1,25 +1,27 @@
 package nextstep.auth.application;
 
 import nextstep.auth.AuthenticationException;
-import nextstep.auth.application.dto.GithubProfileResponse;
 import nextstep.auth.domain.OAuthProvider;
 import nextstep.auth.domain.OAuthUser;
 import nextstep.member.application.MemberService;
 import nextstep.member.application.dto.MemberResponse;
 import nextstep.auth.application.dto.TokenResponse;
 import nextstep.member.domain.Member;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 @Service
 public class TokenService {
     private MemberService memberService;
     private JwtTokenProvider jwtTokenProvider;
-    private GithubOAuthService githubOAuthService;
+    private Map<OAuthProvider, OAuthService> oAuthServices;
 
-    public TokenService(MemberService memberService, JwtTokenProvider jwtTokenProvider, GithubOAuthService githubOAuthService) {
+    public TokenService(MemberService memberService, JwtTokenProvider jwtTokenProvider, Map<OAuthProvider, OAuthService> oAuthServices) {
         this.memberService = memberService;
         this.jwtTokenProvider = jwtTokenProvider;
-        this.githubOAuthService = githubOAuthService;
+        this.oAuthServices = oAuthServices;
     }
 
     public TokenResponse createToken(String email, String password) {
@@ -30,16 +32,11 @@ public class TokenService {
         }
 
         String token = jwtTokenProvider.createToken(member.getEmail());
-
         return new TokenResponse(token);
     }
 
     public TokenResponse createTokenByOauthLogin(OAuthProvider oAuthProvider, String code) {
-        OAuthService oAuthService = null;
-        switch (oAuthProvider) {
-            case GITHUB:
-                oAuthService = githubOAuthService;
-        }
+        OAuthService oAuthService = oAuthServices.get(oAuthProvider);
 
         if (oAuthService == null) {
             throw new AuthenticationException();

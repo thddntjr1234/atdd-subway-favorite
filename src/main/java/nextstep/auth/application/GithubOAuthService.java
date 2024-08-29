@@ -5,6 +5,7 @@ import nextstep.auth.application.dto.GithubAccessTokenResponse;
 import nextstep.auth.application.dto.GithubProfileResponse;
 import nextstep.auth.application.dto.TokenResponse;
 import nextstep.auth.domain.GithubOAuthUser;
+import nextstep.auth.domain.OAuthProvider;
 import nextstep.auth.domain.OAuthUser;
 import nextstep.member.application.MemberService;
 import nextstep.member.application.dto.MemberResponse;
@@ -69,5 +70,10 @@ public class GithubOAuthService implements OAuthService {
         return restTemplate
                 .exchange(url, HttpMethod.GET, new HttpEntity<>(headers), GithubProfileResponse.class)
                 .getBody();
+    }
+
+    @Override
+    public OAuthProvider getImplementsProvider() {
+        return OAuthProvider.GITHUB;
     }
 }
